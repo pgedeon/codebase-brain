@@ -38,6 +38,13 @@ export function loginUser(email: string, password: string): User | null {
   return null;
 }
 
+export function utilPrint(msg: string): void {
+  console.log(msg);
+}
+
+export function anotherUtil(): void {
+  console.log('another util');
+}
 import { createUser, loginUser, UserRepository } from './users';
 import { User } from './users';
 

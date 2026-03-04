@@ -120,11 +120,26 @@ export class ParserManager {
    * Walk AST and dispatch to handlers based on node type
    */
   traverse(rootNode, handlers) {
+    const SYMBOL_NODE_TYPES = [
+      // TypeScript/JavaScript
+      'function_declaration',
+      'class_declaration',
+      'method_definition',
+      'variable_declaration',
+      'lexical_declaration',
+      'public_field_definition',
+      'interface_declaration',
+      // Python
+      'function_definition',
+      'class_definition',
+      // Future: interface, enum, etc.
+    ];
+
     const visit = (node) => {
       const type = node.type;
 
-      // Symbol definitions (language-specific)
-      if (['function_declaration', 'class_declaration', 'method_definition', 'variable_declaration'].includes(type)) {
+      // Symbol definitions
+      if (SYMBOL_NODE_TYPES.includes(type)) {
         handlers.onSymbol?.(node);
       }
 
@@ -222,10 +237,22 @@ export class ParserManager {
         return { name: nameNode?.text, kind: 'function' };
       }
 
-      // Variable/Field: public_field_definition, lexical_declaration -> property_identifier
-      if (type === 'public_field_definition' || type === 'lexical_declaration') {
-        const nameNode = this.findChildByType(node, 'property_identifier') || this.findChildByType(node, 'identifier');
+      // Variable/Field: public_field_definition (class fields)
+      if (type === 'public_field_definition') {
+        const nameNode = this.findChildByType(node, 'property_identifier');
         if (nameNode) return { name: nameNode.text, kind: 'variable' };
+      }
+
+      // Lexical declarations (const/let) and variable declarations
+      if (type === 'lexical_declaration' || type === 'variable_declaration') {
+        // Find the variable declarator (or pair pattern for destructuring)
+        const vardecl = this.findChildByType(node, 'variable_declarator') ||
+                        this.findChildByType(node, 'pair_pattern');
+        if (vardecl) {
+          // The name identifier is a direct child of the declarator
+          const nameNode = this.findChildByType(vardecl, 'identifier');
+          if (nameNode) return { name: nameNode.text, kind: 'variable' };
+        }
       }
     }
 

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Database } from '../database/Database.js';
 import { ParserManager } from './parser.js';
 import { walkRepo } from './walker.js';
-import { CONFIG } from '../config.js';
+import { CONFIG, getLanguage } from '../config.js';
 
 export class Indexer {
   constructor(stateDir) {
@@ -41,7 +41,7 @@ export class Indexer {
     }
 
     // Build file graph edges after all files parsed
-    await this.buildEdges();
+    await this.rebuildEdges();
 
     const elapsed = Date.now() - start;
     console.log(`Indexed ${indexed} files (skipped ${skipped}) in ${(elapsed/1000).toFixed(1)}s`);
@@ -89,6 +89,18 @@ export class Indexer {
   }
 
   async buildEdges() {
+    // Deprecated: use rebuildEdges for full rebuild or incrementalRebuild for single file
+    await this.populateEdges();
+  }
+
+  async rebuildEdges() {
+    console.log('Rebuilding all edges...');
+    this.db.clearEdges();
+    await this.populateEdges();
+    console.log('Edges rebuilt');
+  }
+
+  async populateEdges() {
     console.log('Building file dependency graph...');
 
     // Build edges from imports
@@ -107,7 +119,6 @@ export class Indexer {
     }
 
     // Build edges from references (defs -> refs)
-    // For each ref, link to the symbol's definition file
     const refsWithDefs = this.db.db.prepare(`
       SELECT r.file as ref_file, r.symbol_name, s.file as def_file, COUNT(*) as cnt
       FROM refs r
@@ -125,7 +136,7 @@ export class Indexer {
     console.log('Building call graph...');
     await this.buildCallGraph();
 
-    console.log('Graph building complete');
+    console.log('Edge population complete');
   }
 
   async buildCallGraph() {
@@ -169,6 +180,44 @@ export class Indexer {
       LIMIT 1
     `).get(file, line, line);
     return symbol || null;
+  }
+
+  /**
+   * Get file info for a given absolute path relative to repoRoot
+   */
+  async getFileInfo(absPath) {
+    const { stat } = await import('fs/promises');
+    const { relative, extname } = await import('path');
+
+    const stats = await stat(absPath);
+    const relPath = relative(this.repoRoot, absPath);
+    const lang = getLanguage(relPath);
+    if (!lang) {
+      throw new Error(`Unsupported file type: ${relPath}`);
+    }
+
+    return {
+      path: relPath,
+      fullPath: absPath,
+      lang,
+      size: stats.size,
+      mtime: stats.mtimeMs,
+    };
+  }
+
+  /**
+   * Update a single file (incremental indexing)
+   */
+  async updateFile(absPath) {
+    const fileInfo = await this.getFileInfo(absPath);
+    console.log(`Updating file: ${fileInfo.path}`);
+
+    const result = await this.indexFile(fileInfo);
+
+    // Rebuild all edges (simple v1 approach)
+    await this.rebuildEdges();
+
+    return result;
   }
 
   close() {

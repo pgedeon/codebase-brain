@@ -78,6 +78,14 @@ export class Database {
     transaction();
   }
 
+  clearEdges() {
+    const transaction = this.db.transaction(() => {
+      this.db.exec('DELETE FROM edges_file');
+      this.db.exec('DELETE FROM edges_call');
+    });
+    transaction();
+  }
+
   /**
    * Insert symbol
    */
