@@ -16,7 +16,7 @@ export class Indexer {
 
   async init(repoRoot) {
     this.repoRoot = resolve(repoRoot);
-    await this.parser.init();
+    // No global init needed for native tree-sitter
   }
 
   async indexFull(repoRoot) {
