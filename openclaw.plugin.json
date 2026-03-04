@@ -1,0 +1,21 @@
+{
+  "id": "codebase-brain",
+  "name": "Codebase Brain",
+  "description": "Codebase indexing and navigation tools for OpenClaw agents.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "repoRoot": {
+        "type": "string",
+        "description": "Absolute path to the repository root to index"
+      },
+      "autoIndex": {
+        "type": "boolean",
+        "description": "Automatically create index on first tool call if missing",
+        "default": true
+      }
+    },
+    "required": ["repoRoot"],
+    "additionalProperties": false
+  }
+}
