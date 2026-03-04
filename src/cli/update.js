@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 
 import { Indexer } from '../indexer/Indexer.js';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
-const filePath = process.argv[2];
-if (!filePath) {
-  console.error('Usage: node src/cli/update.js <file_path>');
+const args = process.argv.slice(2);
+if (args.length < 1) {
+  console.error('Usage: node src/cli/update.js <file_path> [repo_root]');
+  console.error('  file_path: Path to file to update (relative or absolute)');
+  console.error('  repo_root: Repository root (default: current working directory)');
   process.exit(1);
 }
 
-// Assume we are running from the repo root
-const repoRoot = process.cwd();
-const stateDir = join(repoRoot, '.openclaw/plugins/codebase-brain/state');
+const filePath = resolve(args[0]);
+const repoRoot = args[1] ? resolve(args[1]) : process.cwd();
+const stateDir = join(repoRoot, '.openclaw', 'plugins', 'codebase-brain', 'state');
 
 const indexer = new Indexer(stateDir);
 
 try {
   await indexer.init(repoRoot);
-  const result = await indexer.updateFile(join(repoRoot, filePath));
+  const result = await indexer.updateFile(filePath);
   if (result.skipped) {
     console.log(`✅ File unchanged: ${filePath}`);
   } else {

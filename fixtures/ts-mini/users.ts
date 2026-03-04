@@ -54,5 +54,8 @@ export function authenticate(email: string, pwd: string): User | null {
   return user;
 }
 
+export function testFn(): void {
+  console.log('test');
+}
 const repo = new UserRepository();
 repo.save(createUser('test@example.com', 1));
