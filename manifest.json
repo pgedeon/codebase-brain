@@ -1,0 +1,21 @@
+{
+  "name": "codebase-brain",
+  "version": "0.1.0",
+  "description": "OpenClaw Codebase Digital Twin Plugin - Index and navigate codebases with structured tools",
+  "author": "OpenClaw Community",
+  "license": "MIT",
+  "plugins": {
+    "codebase-brain": {
+      "version": "0.1.0",
+      "entry": "src/index.js",
+      "tools": [
+        "codebase.find_function",
+        "codebase.where_is_used",
+        "codebase.call_graph",
+        "codebase.dependency_tree",
+        "codebase.repo_map"
+      ],
+      "stateDir": ".openclaw/plugins/codebase-brain/state"
+    }
+  }
+}

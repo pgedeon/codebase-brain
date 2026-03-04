@@ -1,0 +1,12 @@
+# Ignore index and state files
+.openclaw/
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
