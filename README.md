@@ -195,3 +195,7 @@ MIT - see LICENSE file (to be added).
 - **Progress tracking**: See `PROGRESS.md` for detailed implementation log.
 - **Specification**: See `codebase-brain.md` for the full design document.
 - **Issues**: File an issue on GitHub: https://github.com/pgedeon/codebase-brain
+
+---
+
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-blue)](https://www.paypal.com/donate/?business=petermgedeon%40gmail.com)
